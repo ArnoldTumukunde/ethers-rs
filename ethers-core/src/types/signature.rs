@@ -3,7 +3,8 @@ use crate::{
     types::{Address, H256, U256},
     utils::hash_message,
 };
-use elliptic_curve::{consts::U32, sec1::ToEncodedPoint};
+use elliptic_curve::consts::U32;
+use k256::elliptic_curve::sec1::ToEncodedPoint;
 use generic_array::GenericArray;
 use k256::{
     ecdsa::{
@@ -16,6 +17,7 @@ use open_fastrlp::Decodable;
 use serde::{Deserialize, Serialize};
 use std::{fmt, str::FromStr};
 use thiserror::Error;
+
 
 /// An error involving a signature.
 #[derive(Debug, Error)]
