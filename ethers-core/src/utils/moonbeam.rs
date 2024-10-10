@@ -2,7 +2,7 @@
 
 use std::collections::BTreeMap;
 
-use generic_array::GenericArray;
+use hybrid_array::Array;
 use k256::SecretKey;
 
 /// Returns the private developer keys <https://docs.moonbeam.network/builders/get-started/networks/moonbeam-dev/#pre-funded-development-accounts>
@@ -48,7 +48,7 @@ impl MoonbeamDev {
 }
 
 fn to_secret_key(s: &str) -> SecretKey {
-    SecretKey::from_bytes(&GenericArray::clone_from_slice(&hex::decode(s).unwrap())).unwrap()
+    SecretKey::from_bytes(&Array::clone_from_slice(&hex::decode(s).unwrap())).unwrap()
 }
 
 impl Default for MoonbeamDev {

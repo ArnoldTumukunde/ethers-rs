@@ -17,6 +17,7 @@ use ethers_core::{
 use std::path::Path;
 use std::str::FromStr;
 use thiserror::Error;
+use hybrid_array::Array;
 
 #[derive(Error, Debug)]
 /// Error thrown by the Wallet module
@@ -66,7 +67,8 @@ impl Wallet<SigningKey> {
         S: AsRef<[u8]>,
     {
         let (secret, uuid) = eth_keystore::new(dir, rng, password, name)?;
-        let signer = SigningKey::from_bytes(secret.as_slice().into())?;
+        let secret_key = Array::try_from(secret.as_slice()).expect("Failed to convert secret ket to hybrid array");
+        let signer = SigningKey::from_bytes(&secret_key)?;
         let address = secret_key_to_address(&signer);
         Ok((Self { signer, address, chain_id: 1 }, uuid))
     }
@@ -79,7 +81,8 @@ impl Wallet<SigningKey> {
         S: AsRef<[u8]>,
     {
         let secret = eth_keystore::decrypt_key(keypath, password)?;
-        let signer = SigningKey::from_bytes(secret.as_slice().into())?;
+        let secret_key = Array::try_from(secret.as_slice()).expect("Failed to convert secret ket to hybrid array");
+        let signer = SigningKey::from_bytes(&secret_key)?;
         let address = secret_key_to_address(&signer);
         Ok(Self { signer, address, chain_id: 1 })
     }
@@ -117,7 +120,8 @@ impl Wallet<SigningKey> {
 
     /// Creates a new Wallet instance from a raw scalar value (big endian).
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, WalletError> {
-        let signer = SigningKey::from_bytes(bytes.into())?;
+        let secret_key = Array::try_from(bytes).expect("Failed to convert secret ket to hybrid array");
+        let signer = SigningKey::from_bytes(&secret_key)?;
         let address = secret_key_to_address(&signer);
         Ok(Self { signer, address, chain_id: 1 })
     }
@@ -159,8 +163,9 @@ impl FromStr for Wallet<SigningKey> {
         if src.len() != 32 {
             return Err(WalletError::HexError(hex::FromHexError::InvalidStringLength))
         }
+        let secret_key = Array::try_from(src.as_slice()).expect("Failed to convert secret ket to hybrid array");
 
-        let sk = SigningKey::from_bytes(src.as_slice().into())?;
+        let sk = SigningKey::from_bytes(&secret_key.into())?;
         Ok(sk.into())
     }
 }

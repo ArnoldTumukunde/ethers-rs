@@ -5,7 +5,7 @@ use crate::{
 };
 use elliptic_curve::consts::U32;
 use k256::elliptic_curve::sec1::ToEncodedPoint;
-use generic_array::GenericArray;
+use hybrid_array::Array;
 use k256::{
     ecdsa::{
         Error as K256SignatureError, RecoveryId, Signature as RecoverableSignature,
@@ -135,15 +135,15 @@ impl Signature {
             let mut s_bytes = [0u8; 32];
             self.r.to_big_endian(&mut r_bytes);
             self.s.to_big_endian(&mut s_bytes);
-            let gar: &GenericArray<u8, U32> = GenericArray::from_slice(&r_bytes);
-            let gas: &GenericArray<u8, U32> = GenericArray::from_slice(&s_bytes);
+            let gar: &Array<u8, U32> = Array::from_slice(&r_bytes);
+            let gas: &Array<u8, U32> = Array::from_slice(&s_bytes);
             K256Signature::from_scalars(*gar, *gas)?
         };
 
         // Normalize into "low S" form. See:
         // - https://github.com/RustCrypto/elliptic-curves/issues/988
         // - https://github.com/bluealloy/revm/pull/870
-        if let Some(normalized) = signature.normalize_s() {
+        if let normalized = signature.normalize_s() {
             signature = normalized;
             recovery_id = RecoveryId::from_byte(recovery_id.to_byte() ^ 1).unwrap();
         }
